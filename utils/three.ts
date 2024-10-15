@@ -1,6 +1,7 @@
 import { MutableRefObject } from "react";
 import * as THREE from "three";
 import WebGL from "three/addons/capabilities/WebGL.js";
+import { OrbitControls } from "three/examples/jsm/Addons.js";
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
@@ -20,11 +21,20 @@ export function initScene(element: MutableRefObject<HTMLDivElement>) {
   }
 
   scene.clear();
-  camera.aspect = window.innerWidth / window.innerHeight;
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  // camera.aspect = window.innerWidth / window.innerHeight;
+  renderer.setSize(window.innerHeight, window.innerHeight);
   element.current.appendChild(renderer.domElement);
 
-  setCameraPos(new THREE.Vector3(0, 0, 10));
+  setCameraPos(new THREE.Vector3(0, 0, 30));
+
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.minDistance = 10;
+  controls.maxDistance = 500;
+  addAnimation(() => {
+    controls.update();
+  });
+
   renderer.setAnimationLoop(animate);
 
   return renderer.domElement;

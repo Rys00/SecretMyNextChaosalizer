@@ -1,5 +1,6 @@
-import * as THREE from "three";
 import { Vector3 } from "three";
+import { Line2 } from "three/addons/lines/Line2.js";
+import { LineGeometry, LineMaterial } from "three/examples/jsm/Addons.js";
 
 function lorenz(
   pos: Vector3,
@@ -19,18 +20,23 @@ export function getLorenzCurve(
   steps: number = 10000,
   dt: number = 0.01
 ) {
-  const curve = new THREE.CatmullRomCurve3([initial_pos]);
+  const points = [initial_pos];
   for (let i = 0; i < steps; i++) {
-    const last = curve.points[curve.points.length - 1];
-    curve.points.push(last.add(lorenz(last).multiplyScalar(dt)));
+    const last = new Vector3().copy(points[i]);
+    points.push(last.add(lorenz(last).multiplyScalar(dt)));
   }
 
-  console.log(curve.points);
-
-  const geometry = new THREE.BufferGeometry().setFromPoints(curve.points);
-  const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
-  const curveObject = new THREE.Line(geometry, material);
-  console.log(geometry);
+  const geometry = new LineGeometry().setPositions(
+    points.reduce<number[]>((acc, point) => {
+      acc.push(point.x, point.y, point.z);
+      return acc;
+    }, [])
+  );
+  const material = new LineMaterial({
+    color: 0xff0000,
+    linewidth: 3,
+  });
+  const curveObject = new Line2(geometry, material);
 
   return curveObject;
 }
