@@ -1,15 +1,16 @@
 "use client";
 
 import { getLorenzCurve } from "@/utils/lorenz";
-import { addAnimation, addToScene, initScene } from "@/utils/three";
+import CanvasRoot from "@/utils/three/canvas_root";
 import { LegacyRef, MutableRefObject, useEffect, useRef } from "react";
-import { Color, Vector3 } from "three";
+import { Color, TypedArray, Vector3 } from "three";
 
 const ThreeScene = () => {
   const ref = useRef<HTMLDivElement>();
 
   useEffect(() => {
-    const renderer = initScene(ref as MutableRefObject<HTMLDivElement>);
+    const root = new CanvasRoot();
+    const renderer = root.initSceneOn(ref as MutableRefObject<HTMLDivElement>);
 
     const steps = 10000;
     const gradient = [new Color(0xe8ea61), new Color(0xe4352f)];
@@ -21,19 +22,30 @@ const ThreeScene = () => {
         new Vector3(0, 1, 1.05 + epsilon * i),
         steps
       );
+      const dot = root.genBloomDot();
 
       curve.position.y = -25;
       curve.rotation.x = -Math.PI / 2;
-      console.log(curve);
 
       curve.geometry.instanceCount = 0;
-      addAnimation(() => {
+      const instances: TypedArray =
+        curve.geometry.attributes.instanceStart.array;
+      root.addAnimation(() => {
         curve.rotation.z += 0.01;
         curve.geometry.instanceCount = curve.geometry.instanceCount + 1;
+        const off = 6 * curve.geometry.instanceCount;
+
+        dot.position.copy(
+          curve.localToWorld(
+            new Vector3(instances[off], instances[off + 1], instances[off + 2])
+          )
+        );
       });
       curve.material.color.lerpColors(gradient[0], gradient[1], i / amount);
+      dot.material.color = new Color(0xff0000); //.lerpColors(gradient[0], gradient[1], i / amount);
 
-      addToScene(curve);
+      root.addToScene(curve);
+      root.addToScene(dot);
     }
 
     return () => {
