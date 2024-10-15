@@ -42,7 +42,7 @@ const ThreeScene = () => {
         );
       });
       curve.material.color.lerpColors(gradient[0], gradient[1], i / amount);
-      dot.material.color = new Color(0xff0000); //.lerpColors(gradient[0], gradient[1], i / amount);
+      dot.material.color.lerpColors(gradient[0], gradient[1], i / amount);
 
       root.addToScene(curve);
       root.addToScene(dot);

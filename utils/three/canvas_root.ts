@@ -124,7 +124,7 @@ export default class CanvasRoot {
 
   genBloomDot() {
     const geometry = new THREE.IcosahedronGeometry(0.5, 1);
-    const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const material = new THREE.MeshBasicMaterial({ color: 0xe458ac });
     const dot = new THREE.Mesh(geometry, material);
     dot.layers.enable(this.BLOOM_SCENE);
 
