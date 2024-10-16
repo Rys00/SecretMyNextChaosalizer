@@ -40,11 +40,14 @@ export default class CanvasRoot {
     string,
     THREE.Material | THREE.Material[]
   >();
+  clock: THREE.Clock;
 
   constructor() {
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
     this.camera.position.set(0, 0, 75);
+
+    this.clock = new THREE.Clock();
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.toneMapping = THREE.ReinhardToneMapping;

@@ -49,10 +49,12 @@ export function addLorenzSystem(
   epsilon: number = 0.01,
   steps: number = 10000,
   dt: number = 0.01,
-  colorGradient: [Color, Color] | undefined = undefined
+  colorGradient: [Color, Color] | undefined = undefined,
+  animationSpeed: number | undefined = undefined
 ) {
   if (!colorGradient)
     colorGradient = [new Color(0x000000), new Color(0xffffff)];
+  if (!animationSpeed) animationSpeed = 1 / dt;
 
   for (let i = 0; i < amount; i++) {
     const curve = getLorenzCurve(
@@ -66,9 +68,11 @@ export function addLorenzSystem(
 
     curve.geometry.instanceCount = 0;
     const instances = curve.geometry.attributes.instanceStart.array;
-    canvas.addAnimation(() => {
+    let iter = 0;
+    canvas.addAnimation((delta: number) => {
       curve.rotation.z += 0.01;
-      curve.geometry.instanceCount = curve.geometry.instanceCount + 1;
+      iter += delta * animationSpeed;
+      curve.geometry.instanceCount = Math.floor(iter);
       const off = 6 * curve.geometry.instanceCount;
 
       dot.position.copy(

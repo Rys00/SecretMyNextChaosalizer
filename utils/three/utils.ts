@@ -27,7 +27,9 @@ export const getRestoreMaterial =
   };
 
 export const getAnimate = (context: CanvasRoot) => () => {
-  context.animations.forEach((animation) => animation());
+  const delta = context.clock.getDelta();
+
+  context.animations.forEach((animation) => animation(delta));
 
   context.renderer.render(context.scene, context.camera);
   context.scene.traverse(getDarkenNonBloomed(context));
