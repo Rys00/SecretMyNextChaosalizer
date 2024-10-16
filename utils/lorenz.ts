@@ -1,6 +1,7 @@
-import { Vector3 } from "three";
+import { Color, Vector3 } from "three";
 import { Line2 } from "three/addons/lines/Line2.js";
 import { LineGeometry, LineMaterial } from "three/examples/jsm/Addons.js";
+import CanvasRoot from "./three/canvas_root";
 
 function lorenz(
   pos: Vector3,
@@ -39,4 +40,55 @@ export function getLorenzCurve(
   const curveObject = new Line2(geometry, material);
 
   return curveObject;
+}
+
+export function addLorenzSystem(
+  root_pos: Vector3,
+  amount: number,
+  canvas: CanvasRoot,
+  epsilon: number = 0.01,
+  steps: number = 10000,
+  dt: number = 0.01,
+  colorGradient: [Color, Color] | undefined = undefined
+) {
+  if (!colorGradient)
+    colorGradient = [new Color(0x000000), new Color(0xffffff)];
+
+  for (let i = 0; i < amount; i++) {
+    const curve = getLorenzCurve(
+      new Vector3().copy(root_pos).add(new Vector3(0, 0, epsilon * i)),
+      steps
+    );
+    const dot = canvas.genBloomDot();
+
+    curve.position.y = -25;
+    curve.rotation.x = -Math.PI / 2;
+
+    curve.geometry.instanceCount = 0;
+    const instances = curve.geometry.attributes.instanceStart.array;
+    canvas.addAnimation(() => {
+      curve.rotation.z += 0.01;
+      curve.geometry.instanceCount = curve.geometry.instanceCount + 1;
+      const off = 6 * curve.geometry.instanceCount;
+
+      dot.position.copy(
+        curve.localToWorld(
+          new Vector3(instances[off], instances[off + 1], instances[off + 2])
+        )
+      );
+    });
+    curve.material.color.lerpColors(
+      colorGradient[0],
+      colorGradient[1],
+      i / amount
+    );
+    dot.material.color.lerpColors(
+      colorGradient[0],
+      colorGradient[1],
+      i / amount
+    );
+
+    canvas.addToScene(curve);
+    canvas.addToScene(dot);
+  }
 }
