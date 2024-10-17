@@ -1,45 +1,97 @@
-import { Color, Vector3 } from "three";
+import { Color, ColorRepresentation, HSL, Vector3 } from "three";
 import { Line2 } from "three/addons/lines/Line2.js";
 import { LineGeometry, LineMaterial } from "three/examples/jsm/Addons.js";
 import CanvasRoot from "./three/canvas_root";
+export class LorenzRK4 {
+  points: Vector3[];
 
-function lorenz(
-  pos: Vector3,
-  s: number = 10,
-  r: number = 28,
-  b: number = 2.667
-) {
-  return new Vector3(
-    s * (pos.y - pos.x),
-    r * pos.x - pos.y - pos.x * pos.z,
-    pos.x * pos.y - b * pos.z
-  );
-}
+  sigma: number;
+  rho: number;
+  beta: number;
 
-export function getLorenzCurve(
-  initial_pos: Vector3,
-  steps: number = 10000,
-  dt: number = 0.01
-) {
-  const points = [initial_pos];
-  for (let i = 0; i < steps; i++) {
-    const last = new Vector3().copy(points[i]);
-    points.push(last.add(lorenz(last).multiplyScalar(dt)));
+  step: number;
+
+  constructor(
+    pos0: Vector3,
+    sigma: number = 10,
+    rho: number = 28,
+    beta: number = 2.667,
+    step: number = 0.01
+  ) {
+    this.sigma = sigma;
+    this.rho = rho;
+    this.beta = beta;
+
+    this.step = step;
+
+    this.points = [new Vector3().copy(pos0)];
   }
 
-  const geometry = new LineGeometry().setPositions(
-    points.reduce<number[]>((acc, point) => {
-      acc.push(point.x, point.y, point.z);
-      return acc;
-    }, [])
-  );
-  const material = new LineMaterial({
-    color: 0xff0000,
-    linewidth: 3,
-  });
-  const curveObject = new Line2(geometry, material);
+  dx(pos: Vector3): number {
+    return this.sigma * (pos.y - pos.x); //             sigma * (y - x)
+  }
+  dy(pos: Vector3): number {
+    return this.rho * pos.x - pos.y - pos.x * pos.z; // rho * x - y - x * z
+  }
+  dz(pos: Vector3): number {
+    return pos.x * pos.y - this.beta * pos.z; //        x - y - beta * z
+  }
+  dVec(pos: Vector3): Vector3 {
+    return new Vector3(this.dx(pos), this.dy(pos), this.dz(pos));
+  }
 
-  return curveObject;
+  kVec(pos: Vector3): [Vector3, Vector3, Vector3, Vector3] {
+    const k1 = this.dVec(pos); //                                         k1 = dVec(pos)
+    const off1 = new Vector3().copy(k1).multiplyScalar(this.step / 2); // off1 = k1 * step / 2
+    const k2 = this.dVec(new Vector3().copy(pos).add(off1)); //           k2 = dVec(pos + off1)
+    const off2 = new Vector3().copy(k2).multiplyScalar(this.step / 2); // off2 = k2 * step / 2
+    const k3 = this.dVec(new Vector3().copy(pos).add(off2)); //           k3 = dVec(pos + off2)
+    const off3 = new Vector3().copy(k3).multiplyScalar(this.step); //     off3 = k3 * step
+    const k4 = this.dVec(new Vector3().copy(pos).add(off3)); //           k4 = dVec(pos + off3)
+    return [k1, k2, k3, k4];
+  }
+
+  genNextPoint(strip: boolean = false) {
+    const result = new Vector3().copy(
+      this.points.length ? this.points[this.points.length - 1] : new Vector3()
+    );
+
+    const kVec = this.kVec(result); // [k1, k2, k3, k4]
+
+    const off = new Vector3()
+      .copy(kVec[0]) //                  (k1
+      .add(kVec[1].multiplyScalar(2)) // + 2 * k2
+      .add(kVec[2].multiplyScalar(2)) // + 2 * k3
+      .add(kVec[3]) //                   + k4)
+      .multiplyScalar(this.step / 6); // / 6 * step
+
+    this.points.push(result);
+    if (strip) this.points.splice(0, 1);
+    return result.add(off);
+  }
+
+  genNextPoints(amount: number) {
+    for (let i = 0; i < amount; i++) {
+      this.genNextPoint();
+    }
+  }
+
+  getCurve(color: ColorRepresentation = 0xff0000, width: number = 2) {
+    const geometry = new LineGeometry().setPositions(
+      this.points.reduce<number[]>((acc, point) => {
+        acc.push(point.x, point.y, point.z);
+        return acc;
+      }, [])
+    );
+
+    const material = new LineMaterial({
+      color: color,
+      linewidth: width,
+    });
+    const curveObject = new Line2(geometry, material);
+
+    return curveObject;
+  }
 }
 
 export function addLorenzSystem(
@@ -56,11 +108,11 @@ export function addLorenzSystem(
     colorGradient = [new Color(0x000000), new Color(0xffffff)];
   if (!animationSpeed) animationSpeed = 1 / dt;
 
+  const pos = new Vector3().copy(root_pos);
   for (let i = 0; i < amount; i++) {
-    const curve = getLorenzCurve(
-      new Vector3().copy(root_pos).add(new Vector3(0, 0, epsilon * i)),
-      steps
-    );
+    const lorenz = new LorenzRK4(pos);
+    lorenz.genNextPoints(steps);
+    const curve = lorenz.getCurve();
     const dot = canvas.genBloomDot();
 
     curve.position.y = -25;
@@ -86,6 +138,13 @@ export function addLorenzSystem(
       colorGradient[1],
       i / amount
     );
+    const hsl: HSL = {
+      h: 0,
+      s: 0,
+      l: 0,
+    };
+    curve.material.color.getHSL(hsl);
+    curve.material.color.setHSL(hsl.h, hsl.s, 0.066);
     dot.material.color.lerpColors(
       colorGradient[0],
       colorGradient[1],
@@ -94,5 +153,7 @@ export function addLorenzSystem(
 
     canvas.addToScene(curve);
     canvas.addToScene(dot);
+
+    pos.add(new Vector3(0, 0, epsilon));
   }
 }
