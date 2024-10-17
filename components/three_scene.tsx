@@ -12,7 +12,7 @@ const ThreeScene = () => {
     const root = new CanvasRoot();
     const renderer = root.initSceneOn(ref as MutableRefObject<HTMLDivElement>);
 
-    addLorenzSystem(new Vector3(0, 1, 1.05), 3, root, 0.01, 10000, 0.01, [
+    addLorenzSystem(new Vector3(0, 1, 1.05), 3, root, 0.01, 0.01, [
       new Color(0xe8ea61),
       new Color(0xe4352f),
     ]);
