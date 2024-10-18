@@ -1,30 +1,33 @@
-import * as THREE from "three";
-import CanvasRoot from "./canvas_root";
+import {
+  Color,
+  ColorRepresentation,
+  HSL,
+  IcosahedronGeometry,
+  Mesh,
+  MeshBasicMaterial,
+  Object3D,
+} from "three";
+import CanvasRoot, { BLOOM_SCENE_ID } from "./canvas_root";
 
-export const disposeMaterial = (obj: THREE.Object3D) => {
-  if (obj instanceof THREE.Mesh && obj.material) {
+export const disposeMaterial = (obj: Object3D) => {
+  if (obj instanceof Mesh && obj.material) {
     obj.material.dispose();
   }
 };
 
-export const getDarkenNonBloomed =
-  (context: CanvasRoot) => (obj: THREE.Object3D) => {
-    if (
-      obj instanceof THREE.Mesh &&
-      context.bloomLayer.test(obj.layers) === false
-    ) {
-      context.materials.set(obj.uuid, obj.material);
-      obj.material = context.darkMaterial;
-    }
-  };
+export const getDarkenNonBloomed = (context: CanvasRoot) => (obj: Object3D) => {
+  if (obj instanceof Mesh && context.bloomLayer.test(obj.layers) === false) {
+    context.materials.set(obj.uuid, obj.material);
+    obj.material = context.darkMaterial;
+  }
+};
 
-export const getRestoreMaterial =
-  (context: CanvasRoot) => (obj: THREE.Object3D) => {
-    if (obj instanceof THREE.Mesh && context.materials.has(obj.uuid)) {
-      obj.material = context.materials.get(obj.uuid);
-      context.materials.delete(obj.uuid);
-    }
-  };
+export const getRestoreMaterial = (context: CanvasRoot) => (obj: Object3D) => {
+  if (obj instanceof Mesh && context.materials.has(obj.uuid)) {
+    obj.material = context.materials.get(obj.uuid);
+    context.materials.delete(obj.uuid);
+  }
+};
 
 export const getAnimate = (context: CanvasRoot) => () => {
   const delta = context.clock.getDelta();
@@ -49,6 +52,29 @@ export const getOnWindowResize = (context: CanvasRoot) => () => {
   context.bloomComposer.setSize(width, height);
   context.finalComposer.setSize(width, height);
 };
+
+export function genBloomDot(
+  radius: number = 0.5,
+  color: ColorRepresentation = 0xff0000,
+  detail: number = 1
+) {
+  const geometry = new IcosahedronGeometry(radius, detail);
+  const material = new MeshBasicMaterial({ color: color });
+  const dot = new Mesh(geometry, material);
+  dot.layers.enable(BLOOM_SCENE_ID);
+
+  return dot;
+}
+
+export function setColorLightness(color: Color, value: number) {
+  const colorHSL: HSL = {
+    h: 0,
+    s: 0,
+    l: 0,
+  };
+  color.getHSL(colorHSL);
+  return new Color().copy(color).setHSL(colorHSL.h, colorHSL.s, value);
+}
 
 export const VERTEX_SHADER = `
 varying vec2 vUv;

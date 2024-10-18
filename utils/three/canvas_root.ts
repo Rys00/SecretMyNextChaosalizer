@@ -1,5 +1,17 @@
 import { MutableRefObject } from "react";
-import * as THREE from "three";
+import {
+  Clock,
+  Layers,
+  Material,
+  MeshBasicMaterial,
+  Object3D,
+  PerspectiveCamera,
+  ReinhardToneMapping,
+  Scene,
+  ShaderMaterial,
+  Vector2,
+  WebGLRenderer,
+} from "three";
 import WebGL from "three/addons/capabilities/WebGL.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
@@ -15,10 +27,12 @@ import {
   VERTEX_SHADER,
 } from "./utils";
 
+export const BLOOM_SCENE_ID = 1;
+
 export default class CanvasRoot {
-  scene: THREE.Scene;
-  camera: THREE.PerspectiveCamera;
-  renderer: THREE.WebGLRenderer;
+  scene: Scene;
+  camera: PerspectiveCamera;
+  renderer: WebGLRenderer;
   controls: OrbitControls;
   animations: CallableFunction[] = [];
   renderScene: RenderPass;
@@ -33,35 +47,34 @@ export default class CanvasRoot {
   mixPass: ShaderPass;
   outputPass: OutputPass;
   finalComposer: EffectComposer;
-  BLOOM_SCENE = 1;
-  bloomLayer: THREE.Layers;
-  darkMaterial = new THREE.MeshBasicMaterial({ color: "black" });
-  materials: Map<string, THREE.Material | THREE.Material[]> = new Map<
+  bloomLayer: Layers;
+  darkMaterial = new MeshBasicMaterial({ color: "black" });
+  materials: Map<string, Material | Material[]> = new Map<
     string,
-    THREE.Material | THREE.Material[]
+    Material | Material[]
   >();
-  clock: THREE.Clock;
+  clock: Clock;
 
   constructor() {
-    this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+    this.scene = new Scene();
+    this.camera = new PerspectiveCamera(75, 1, 0.1, 1000);
     this.camera.position.set(0, 0, 75);
 
-    this.clock = new THREE.Clock();
+    this.clock = new Clock();
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
-    this.renderer.toneMapping = THREE.ReinhardToneMapping;
+    this.renderer = new WebGLRenderer({ antialias: true });
+    this.renderer.toneMapping = ReinhardToneMapping;
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
     this.controls.minDistance = 10;
     this.controls.maxDistance = 500;
 
-    this.bloomLayer = new THREE.Layers();
-    this.bloomLayer.set(this.BLOOM_SCENE);
+    this.bloomLayer = new Layers();
+    this.bloomLayer.set(BLOOM_SCENE_ID);
     this.renderScene = new RenderPass(this.scene, this.camera);
     this.bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(window.innerWidth, window.innerHeight),
+      new Vector2(window.innerWidth, window.innerHeight),
       1.5,
       0.4,
       0.85
@@ -74,7 +87,7 @@ export default class CanvasRoot {
     this.bloomComposer.addPass(this.renderScene);
     this.bloomComposer.addPass(this.bloomPass);
     this.mixPass = new ShaderPass(
-      new THREE.ShaderMaterial({
+      new ShaderMaterial({
         uniforms: {
           baseTexture: { value: null },
           bloomTexture: { value: this.bloomComposer.renderTarget2.texture },
@@ -121,16 +134,7 @@ export default class CanvasRoot {
     this.animations.push(animation);
   }
 
-  addToScene(object: THREE.Object3D) {
+  addToScene(object: Object3D) {
     this.scene.add(object);
-  }
-
-  genBloomDot() {
-    const geometry = new THREE.IcosahedronGeometry(0.5, 1);
-    const material = new THREE.MeshBasicMaterial({ color: 0xe458ac });
-    const dot = new THREE.Mesh(geometry, material);
-    dot.layers.enable(this.BLOOM_SCENE);
-
-    return dot;
   }
 }

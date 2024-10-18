@@ -1,0 +1,32 @@
+import { Vector3 } from "three";
+import { RK4 } from "./rk4";
+
+export class RosslerRK4 extends RK4 {
+  a: number;
+  b: number;
+  c: number;
+
+  constructor(
+    pos0: Vector3,
+    step: number = 0.05,
+    a: number = 0.2,
+    b: number = 0.2,
+    c: number = 5.7
+  ) {
+    super(pos0, step);
+
+    this.a = a;
+    this.b = b;
+    this.c = c;
+  }
+
+  dx(pos: Vector3): number {
+    return -pos.y - pos.z; //                    - y - z
+  }
+  dy(pos: Vector3): number {
+    return pos.x + this.a * pos.y; //            x + a * y
+  }
+  dz(pos: Vector3): number {
+    return this.b + pos.z * (pos.x - this.c); // b + z * (x - c)
+  }
+}
