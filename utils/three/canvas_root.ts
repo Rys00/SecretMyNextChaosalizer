@@ -20,11 +20,11 @@ import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { ShaderPass } from "three/examples/jsm/Addons.js";
 import {
+  BLOOM_FRAGMENT_SHADER,
+  BLOOM_VERTEX_SHADER,
   disposeMaterial,
-  FRAGMENT_SHADER,
   getAnimate,
   getOnWindowResize,
-  VERTEX_SHADER,
 } from "./utils";
 
 export const BLOOM_SCENE_ID = 1;
@@ -92,8 +92,8 @@ export default class CanvasRoot {
           baseTexture: { value: null },
           bloomTexture: { value: this.bloomComposer.renderTarget2.texture },
         },
-        vertexShader: VERTEX_SHADER,
-        fragmentShader: FRAGMENT_SHADER,
+        vertexShader: BLOOM_VERTEX_SHADER,
+        fragmentShader: BLOOM_FRAGMENT_SHADER,
         defines: {},
       }),
       "baseTexture"

@@ -3,6 +3,7 @@ import {
   ColorRepresentation,
   HSL,
   IcosahedronGeometry,
+  Line,
   Mesh,
   MeshBasicMaterial,
   Object3D,
@@ -10,20 +11,26 @@ import {
 import CanvasRoot, { BLOOM_SCENE_ID } from "./canvas_root";
 
 export const disposeMaterial = (obj: Object3D) => {
-  if (obj instanceof Mesh && obj.material) {
+  if ((obj instanceof Mesh || obj instanceof Line) && obj.material) {
     obj.material.dispose();
   }
 };
 
 export const getDarkenNonBloomed = (context: CanvasRoot) => (obj: Object3D) => {
-  if (obj instanceof Mesh && context.bloomLayer.test(obj.layers) === false) {
+  if (
+    (obj instanceof Mesh || obj instanceof Line) &&
+    context.bloomLayer.test(obj.layers) === false
+  ) {
     context.materials.set(obj.uuid, obj.material);
     obj.material = context.darkMaterial;
   }
 };
 
 export const getRestoreMaterial = (context: CanvasRoot) => (obj: Object3D) => {
-  if (obj instanceof Mesh && context.materials.has(obj.uuid)) {
+  if (
+    (obj instanceof Mesh || obj instanceof Line) &&
+    context.materials.has(obj.uuid)
+  ) {
     obj.material = context.materials.get(obj.uuid);
     context.materials.delete(obj.uuid);
   }
@@ -66,17 +73,22 @@ export function genBloomDot(
   return dot;
 }
 
-export function setColorLightness(color: Color, value: number) {
+export function getColorHSL(color: Color) {
   const colorHSL: HSL = {
     h: 0,
     s: 0,
     l: 0,
   };
   color.getHSL(colorHSL);
+  return colorHSL;
+}
+
+export function setColorLightness(color: Color, value: number) {
+  const colorHSL = getColorHSL(color);
   return new Color().copy(color).setHSL(colorHSL.h, colorHSL.s, value);
 }
 
-export const VERTEX_SHADER = `
+export const BLOOM_VERTEX_SHADER = `
 varying vec2 vUv;
 
 void main() {
@@ -85,7 +97,7 @@ void main() {
 }
 `;
 
-export const FRAGMENT_SHADER = `
+export const BLOOM_FRAGMENT_SHADER = `
 uniform sampler2D baseTexture;
 uniform sampler2D bloomTexture;
 

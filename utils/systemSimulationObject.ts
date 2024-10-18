@@ -1,6 +1,6 @@
 import { Color, Group, Vector3 } from "three";
 import { LorenzRK4 } from "./lorenz";
-import { RK4 } from "./rk4";
+import { RK4Curve } from "./rk4";
 import { RosslerRK4 } from "./rossler";
 import { genBloomDot, setColorLightness } from "./three/utils";
 
@@ -19,15 +19,18 @@ type SystemArgs =
 
 export class SystemSimulationObject {
   root: Group;
-  systemClass: typeof RK4;
+  systemClass: typeof RK4Curve;
   systemArgs: ConstructorParameters<typeof this.systemClass>;
   amount: number;
   epsilon: number;
   colorGradient: [Color, Color];
+  curveWidth: number;
+  dotRadius: number;
   tail: number | boolean;
+  tailFade: number;
   idleRotation: number;
   animSpeed: number;
-  systemInstances: RK4[];
+  systemInstances: RK4Curve[];
   instancesAnimations: CallableFunction[];
 
   constructor(
@@ -35,7 +38,10 @@ export class SystemSimulationObject {
     amount: number,
     epsilon: number = 0.01,
     colorGradient: [Color, Color] | undefined = undefined,
+    curveWidth: number = 2,
+    dotRadius: number = 0.5,
     tail: number | boolean = 30,
+    tailFade: number = 1,
     idleRotation: number = 0.5,
     animSpeed: number = 1
   ) {
@@ -50,7 +56,7 @@ export class SystemSimulationObject {
         this.systemClass = RosslerRK4;
         break;
       default:
-        this.systemClass = RK4;
+        this.systemClass = RK4Curve;
         break;
     }
     this.systemArgs = Object.values(system)[0] as ConstructorParameters<
@@ -63,7 +69,10 @@ export class SystemSimulationObject {
       new Color(0x000000),
       new Color(0xffffff),
     ];
+    this.curveWidth = curveWidth;
+    this.dotRadius = dotRadius;
     this.tail = tail;
+    this.tailFade = tailFade;
     this.idleRotation = idleRotation;
     this.animSpeed = animSpeed;
 
@@ -78,6 +87,7 @@ export class SystemSimulationObject {
       const newInstance = new this.systemClass(...this.systemArgs);
       newInstance.points[0].z += this.epsilon * i;
       newInstance.animSpeed = this.animSpeed;
+      newInstance.fadeLength = this.tailFade;
 
       if (!this.tail) newInstance.strip = true;
       else if (this.tail === true) newInstance.strip = false;
@@ -96,9 +106,9 @@ export class SystemSimulationObject {
 
       const curve = newInstance.getCurveObject(
         setColorLightness(color, 0.066),
-        2
+        this.curveWidth
       );
-      const head = genBloomDot(0.5, color, 1);
+      const head = genBloomDot(this.dotRadius, color, 1);
 
       this.systemInstances.push(newInstance);
       this.instancesAnimations.push(newInstance.getCurveAnimation(curve, head));
@@ -121,10 +131,13 @@ export function getDefaultLorenzSystem() {
     {
       [SystemType.Lorenz]: [new Vector3(0, 1, 1.05)],
     },
-    3,
+    20,
     0.01,
     [new Color(0xe8ea61), new Color(0xe4352f)],
     3,
+    0.5,
+    2,
+    0.5,
     0.5,
     1
   );
@@ -143,7 +156,10 @@ export function getDefaultRosslerSystem() {
     3,
     0.01,
     [new Color(0xe8ea61), new Color(0xe4352f)],
+    2,
+    0.5,
     10,
+    1,
     0.5,
     5
   );

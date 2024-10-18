@@ -1,7 +1,7 @@
 import { Vector3 } from "three";
-import { RK4 } from "./rk4";
+import { RK4Curve } from "./rk4";
 
-export class LorenzRK4 extends RK4 {
+export class LorenzRK4 extends RK4Curve {
   sigma: number;
   rho: number;
   beta: number;
