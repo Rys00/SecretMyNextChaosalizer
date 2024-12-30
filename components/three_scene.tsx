@@ -1,30 +1,70 @@
 "use client";
 
-import { getDefaultLorenzSystem, getLorenzSystem } from "@/utils/systemSimulationObject";
+import { getDefaultLorenzSystem, getDefaultRosslerSystem, getLorenzSystem, getRosslerSystem } from "@/utils/systemSimulationObject";
 import CanvasRoot from "@/utils/three/canvas_root";
 import { LegacyRef, MutableRefObject, useEffect, useRef } from "react";
 import Slider from "./slider";
+import { LORENZ_LABELS, ROSSLER_LABELS } from "./constants";
+
+enum SystemType{
+  LORENZ,
+  ROSSLER
+};
 
 const ThreeScene = () => {
   const ref = useRef<HTMLDivElement>();
   let root : CanvasRoot;
   let renderer: HTMLCanvasElement | undefined;
+  let currentSystem: SystemType =  SystemType.LORENZ;
 
-  const valueChange = (values: Array<number>) =>{
+  const generateCorrectSystem = (type: SystemType, values: Array<number> = []) => {
+    switch(type){
+      case SystemType.LORENZ:
+        return getLorenzSystem(values);
+        break;
+      case SystemType.ROSSLER:
+        return getRosslerSystem(values);
+        break;
+    }
+    return getLorenzSystem();
+  };
+
+  const getCorrectLabels = (type: SystemType) =>{
+    switch(type){
+      case SystemType.LORENZ:
+        return LORENZ_LABELS;
+      case SystemType.ROSSLER:
+        return ROSSLER_LABELS;
+    }
+    return LORENZ_LABELS;
+  };
+
+  const valueChange = (values: Array<number> = []) =>{
     root.animations.pop();
     renderer = root.initSceneOn(ref as MutableRefObject<HTMLDivElement>);
 
-    const newSystem = getLorenzSystem(values[0], values[1], values[2]);
+    const newSystem = generateCorrectSystem(currentSystem, values);
 
     root.addToScene(newSystem.root);
     root.addAnimation(newSystem.getSystemAnimation());
+  };
+
+  const changeSystem = () => {
+    console.log(currentSystem);
+    if(currentSystem == SystemType.LORENZ) currentSystem = SystemType.ROSSLER;
+    else currentSystem = SystemType.LORENZ;
+    console.log(currentSystem);
+
+    valueChange();
+
+    return getCorrectLabels(currentSystem);
   };
 
   useEffect(() => {
     root = new CanvasRoot();
     renderer = root.initSceneOn(ref as MutableRefObject<HTMLDivElement>);
 
-    const system = getDefaultLorenzSystem();
+    const system = generateCorrectSystem(currentSystem);
 
     root.addToScene(system.root);
     root.addAnimation(system.getSystemAnimation());
@@ -37,7 +77,9 @@ const ThreeScene = () => {
 
   return (<div ref={ref as LegacyRef<HTMLDivElement>} >
     <Slider props = {{changeFunction: valueChange, 
-                            noSliders: 3}} /> 
+                  noSliders: getCorrectLabels(currentSystem).length, 
+                  labels: getCorrectLabels(currentSystem),
+                  changeSystemFunction: changeSystem}} /> 
   </div>);
 };
 
