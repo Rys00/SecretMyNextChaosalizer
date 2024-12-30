@@ -1,15 +1,28 @@
 "use client";
 
-import { getDefaultLorenzSystem } from "@/utils/systemSimulationObject";
+import { getDefaultLorenzSystem, getLorenzSystem } from "@/utils/systemSimulationObject";
 import CanvasRoot from "@/utils/three/canvas_root";
 import { LegacyRef, MutableRefObject, useEffect, useRef } from "react";
+import Slider from "./slider";
 
 const ThreeScene = () => {
   const ref = useRef<HTMLDivElement>();
+  let root : CanvasRoot;
+  let renderer: HTMLCanvasElement | undefined;
+
+  const valueChange = (values: Array<number>) =>{
+    root.animations.pop();
+    renderer = root.initSceneOn(ref as MutableRefObject<HTMLDivElement>);
+
+    const newSystem = getLorenzSystem(values[0], values[1], values[2]);
+
+    root.addToScene(newSystem.root);
+    root.addAnimation(newSystem.getSystemAnimation());
+  };
 
   useEffect(() => {
-    const root = new CanvasRoot();
-    const renderer = root.initSceneOn(ref as MutableRefObject<HTMLDivElement>);
+    root = new CanvasRoot();
+    renderer = root.initSceneOn(ref as MutableRefObject<HTMLDivElement>);
 
     const system = getDefaultLorenzSystem();
 
@@ -22,7 +35,10 @@ const ThreeScene = () => {
     };
   }, []);
 
-  return <div ref={ref as LegacyRef<HTMLDivElement>}></div>;
+  return (<div ref={ref as LegacyRef<HTMLDivElement>} >
+    <Slider props = {{changeFunction: valueChange, 
+                            noSliders: 3}} /> 
+  </div>);
 };
 
 export default ThreeScene;

@@ -169,3 +169,25 @@ export function getDefaultRosslerSystem() {
 
   return rosslerSystem;
 }
+
+export function getLorenzSystem(sigma: number, rho: number, beta: number){
+  const lorenzSystem = new SystemSimulationObject(
+    {
+      [SystemType.Lorenz]: [new Vector3(0, 1, 1.05), 0.01, sigma, rho, beta],
+    },
+    20,
+    0.01,
+    [new Color(0xe8ea61), new Color(0xe4352f)],
+    3,
+    0.5,
+    2,
+    0.5,
+    0.5,
+    1
+  );
+
+  lorenzSystem.root.rotation.x = -Math.PI / 2;
+  lorenzSystem.root.position.y = -25;
+
+  return lorenzSystem;
+}
