@@ -13,14 +13,14 @@ enum SystemType{
 
 const ThreeScene = () => {
   const ref = useRef<HTMLDivElement>();
-  let root : CanvasRoot;
   let renderer: HTMLCanvasElement | undefined;
   let currentSystem: SystemType =  SystemType.LORENZ;
+  let root : CanvasRoot;
 
   const generateCorrectSystem = (type: SystemType, values: Array<number> = []) => {
     switch(type){
       case SystemType.LORENZ:
-        return getLorenzSystem(values);
+        return getLorenzSystem(values);;
         break;
       case SystemType.ROSSLER:
         return getRosslerSystem(values);
@@ -34,12 +34,15 @@ const ThreeScene = () => {
       case SystemType.LORENZ:
         return LORENZ_LABELS;
       case SystemType.ROSSLER:
-        return ROSSLER_LABELS;
+        return ROSSLER_LABELS;;
     }
     return LORENZ_LABELS;
   };
 
   const valueChange = (values: Array<number> = []) =>{
+    if(typeof root === "undefined"){
+      window.location.reload();
+    }
     root.animations.pop();
     renderer = root.initSceneOn(ref as MutableRefObject<HTMLDivElement>);
 
@@ -50,10 +53,8 @@ const ThreeScene = () => {
   };
 
   const changeSystem = () => {
-    console.log(currentSystem);
     if(currentSystem == SystemType.LORENZ) currentSystem = SystemType.ROSSLER;
     else currentSystem = SystemType.LORENZ;
-    console.log(currentSystem);
 
     valueChange();
 
@@ -77,7 +78,6 @@ const ThreeScene = () => {
 
   return (<div ref={ref as LegacyRef<HTMLDivElement>} >
     <Slider props = {{changeFunction: valueChange, 
-                  noSliders: getCorrectLabels(currentSystem).length, 
                   labels: getCorrectLabels(currentSystem),
                   changeSystemFunction: changeSystem}} /> 
   </div>);

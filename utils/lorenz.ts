@@ -5,8 +5,6 @@ export class LorenzRK4 extends RK4Curve {
   sigma: number;
   rho: number;
   beta: number;
-  variables: number;
-  labels: Array<String>;
 
   constructor(
     pos0: Vector3,
@@ -20,8 +18,6 @@ export class LorenzRK4 extends RK4Curve {
     this.sigma = sigma;
     this.rho = rho;
     this.beta = beta;
-    this.variables = 3;
-    this.labels = ["sigma", "rho", "beta"]
   }
 
   dx(pos: Vector3): number {

@@ -1,8 +1,9 @@
 import { useEffect } from "react";
 
 
-const Slider = ( {props: {noSliders, changeFunction, labels, changeSystemFunction}}: any) =>{
+const Slider = ( {props: {changeFunction, labels, changeSystemFunction}}: any) =>{
     let inputs: Array<HTMLInputElement> = [];
+    let noSliders = labels.length;
 
     function addSliders(element: HTMLElement){
 
