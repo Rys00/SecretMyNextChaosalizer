@@ -3,6 +3,7 @@ import { LorenzRK4 } from "./lorenz";
 import { RK4Curve } from "./rk4";
 import { RosslerRK4 } from "./rossler";
 import { genBloomDot, setColorLightness } from "./three/utils";
+import { mx_bilerp_0 } from "three/src/nodes/materialx/lib/mx_noise.js";
 
 export enum SystemType {
   Lorenz,
@@ -170,10 +171,16 @@ export function getDefaultRosslerSystem() {
   return rosslerSystem;
 }
 
-export function getLorenzSystem(sigma: number, rho: number, beta: number){
+export function getLorenzSystem(values: Array<number> = []){
+  if(values.length < 3) return getDefaultLorenzSystem();
+
+  if(typeof values[0] !== 'number') values[0] = 1;
+  if(typeof values[1] !== 'number') values[1] = 1;
+  if(typeof values[2] !== 'number') values[2] = 1;
+
   const lorenzSystem = new SystemSimulationObject(
     {
-      [SystemType.Lorenz]: [new Vector3(0, 1, 1.05), 0.01, sigma, rho, beta],
+      [SystemType.Lorenz]: [new Vector3(0, 1, 1.05), 0.01, values[0], values[1], values[2]],
     },
     20,
     0.01,
@@ -190,4 +197,31 @@ export function getLorenzSystem(sigma: number, rho: number, beta: number){
   lorenzSystem.root.position.y = -25;
 
   return lorenzSystem;
+}
+
+export function getRosslerSystem(values: Array<number> = []){
+  if(values.length < 2) return getDefaultRosslerSystem();
+
+  if(typeof values[0] !== 'number') values[0] = 1;
+  if(typeof values[1] !== 'number') values[1] = 1;
+
+  const rosslerSystem = new SystemSimulationObject(
+    {
+      [SystemType.Rossler]: [new Vector3(0, 1, 1.05), 0.05, values[0], values[1], 5.56],
+    },
+    3,
+    0.01,
+    [new Color(0xe8ea61), new Color(0xe4352f)],
+    2,
+    0.5,
+    10,
+    1,
+    0.5,
+    5
+  );
+
+  rosslerSystem.root.rotation.x = -Math.PI / 2;
+  rosslerSystem.root.position.y = -15;
+
+  return rosslerSystem;
 }

@@ -5,6 +5,8 @@ export class RosslerRK4 extends RK4Curve {
   a: number;
   b: number;
   c: number;
+  variables: number;
+  labels: Array<String>;
 
   constructor(
     pos0: Vector3,
@@ -18,6 +20,8 @@ export class RosslerRK4 extends RK4Curve {
     this.a = a;
     this.b = b;
     this.c = c;
+    this.variables = 2;
+    this.labels = ["a", "b"];
   }
 
   dx(pos: Vector3): number {
