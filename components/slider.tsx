@@ -1,18 +1,27 @@
 import { useEffect } from "react";
 import "./slider.css"
 
-let getFunctionVariables: CallableFunction;
+type changeFunctionType = (variables:Array<number>) => void;
+type functionNoArrayString = () => Array<string | undefined>
 
-const Slider = ( {props: {changeFunction, labels, changeSystemFunction, systemVariablesFunction}}: any) =>{
-    getFunctionVariables = systemVariablesFunction;
+interface Props{
+    changeFunction: changeFunctionType
+    labels: Array<string>
+    changeSystemFunction: functionNoArrayString
+    systemVariablesFunction: functionNoArrayString
+}
+
+const Slider = ( props: Props ) =>{
+    let labels = props.labels;
+    const changeFunction = props.changeFunction;
+    const changeSystemFunction = props.changeSystemFunction;
+    const systemVariablesFunction = props.systemVariablesFunction;
+
     let inputs: Array<HTMLInputElement> = [];
-    let noSliders = labels.length;
+    let noSliders: number = labels.length;
 
     function addSliders(element: HTMLElement){
-        let data = systemVariablesFunction();
-        let systemName = data[0];
-        let systemVariables = data[1];
-        let child: HTMLElement;
+        const data = systemVariablesFunction();
         while(element.children.length){
             element.removeChild(element.children[0]);
         }
@@ -22,32 +31,33 @@ const Slider = ( {props: {changeFunction, labels, changeSystemFunction, systemVa
         let trow = document.createElement("tr");
         trow.id = "slider-system-name";
         element.appendChild(trow);
-        trow.innerHTML = `<td colspan="2">${systemName} system</td>`;
+        trow.innerHTML = `<td colspan="2">${data[0]} system</td>`;
 
         for(let i = 0; i<noSliders; i++){
-            let trow = document.createElement("tr");
+            trow = document.createElement("tr");
             element.appendChild(trow);
+
             let tdat = document.createElement("td");
             tdat.className="change-data-inner-td";
             trow.appendChild(tdat);
-            let label = document.createElement("label");
+            const label = document.createElement("label");
             label.innerHTML = labels[i]+" : ";
             tdat.appendChild(label);
 
             tdat = document.createElement("td");
             tdat.className="change-data-inner-td";
             trow.appendChild(tdat);
-            let newChild = document.createElement("input");
+            const newChild = document.createElement("input");
             newChild.type = "number";
             newChild.className = "slider-input-class"
-            newChild.placeholder = systemVariables[i];
+            newChild.placeholder = data[i+1] || "error";
             inputs.push(newChild);
             tdat.appendChild(newChild);
         }
     }
 
-    function runChangeFunction(event: any){
-        let values = [];
+    function runChangeFunction(){
+        const values = [];
 
         let child: HTMLInputElement;
         for(child of inputs){
@@ -58,31 +68,21 @@ const Slider = ( {props: {changeFunction, labels, changeSystemFunction, systemVa
     }
 
     function changeSystem(){
-        let variables = changeSystemFunction();
+        const variables = changeSystemFunction();
         noSliders = variables.length;
-        labels = variables;
+        labels = [];
+        for(let i = 0; i<variables.length; i++){
+            labels.push(variables[i] || "error");
+        }
         const element = document.getElementById("slider-input-places-12334");
         if(element == null) throw("big big error");
         addSliders(element);
-        //showSystemData();
-    }
-
-    function showSystemData(){
-        let data = systemVariablesFunction();
-        let element = document.getElementById("slider-info-inner-data");
-        if(element == null) return;
-        let htmlValue = "";
-        for(let i = 0; i<data[0].length; i++){
-            htmlValue += data[1][i] + ": "+data[0][i] + "</br>"; 
-        }
-        element.innerHTML = htmlValue;
     }
 
     useEffect(() =>{
         const element = document.getElementById("slider-input-places-12334");
         if(element == null) throw("big big error");
         addSliders(element);
-        //showSystemData();
     });
 
     return(<div className="slider-class">
@@ -92,7 +92,7 @@ const Slider = ( {props: {changeFunction, labels, changeSystemFunction, systemVa
                 <tr>
                     <td>
                         <table id="slider-input-places-12334"></table>
-                        <button onClick={ (event) => runChangeFunction(event) }>simulate</button>
+                        <button onClick={runChangeFunction}>simulate</button>
                         <button onClick={changeSystem} className="change-system-button-class">change system</button>
                     </td>
                     <td id="slider-info-inner-data"></td>

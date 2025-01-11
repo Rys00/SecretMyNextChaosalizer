@@ -1,6 +1,6 @@
 "use client";
 
-import { getDefaultLorenzSystem, getDefaultRosslerSystem, getLorenzSystem, getRosslerSystem, SystemSimulationObject, SystemType } from "@/utils/systemSimulationObject";
+import { getLorenzSystem, getRosslerSystem, SystemSimulationObject, SystemType } from "@/utils/systemSimulationObject";
 import CanvasRoot from "@/utils/three/canvas_root";
 import { LegacyRef, MutableRefObject, useEffect, useRef } from "react";
 import Slider from "./slider";
@@ -15,10 +15,21 @@ const ThreeScene = () => {
   let animatingSystem: SystemSimulationObject;
 
   const getSystemVariables = () =>{
-    let variables = [...animatingSystem.systemArgs];
+    const variables = [...animatingSystem.systemArgs];
     variables.shift();
     variables.shift();
-    return [SYSTEMS[currentSystem], variables, getCorrectLabels(currentSystem)];
+
+    const variables2 = [];
+    for(let i = 0; i<variables.length; i++){
+      if(variables[i] == null){
+        variables2.push("error");
+        continue;
+      }else{
+        variables2.push(variables[i]?.toString());
+      }
+    }
+
+    return [SYSTEMS[currentSystem], ...variables2];
   };
 
   const generateCorrectSystem = (type: SystemType, values: Array<number> = []) => {
@@ -91,10 +102,10 @@ const ThreeScene = () => {
   }, []);
 
   return (<div className="three-scene-outer-div-class">
-    <Slider props = {{changeFunction: valueChange, 
-              labels: getCorrectLabels(currentSystem),
-              changeSystemFunction: changeSystem,
-              systemVariablesFunction: getSystemVariables}} /> 
+    <Slider changeFunction={valueChange} 
+              labels={getCorrectLabels(currentSystem)}
+              changeSystemFunction={changeSystem}
+              systemVariablesFunction={getSystemVariables} /> 
     <div className="simulation-class">
       <div ref={ref as LegacyRef<HTMLDivElement>}></div>
     </div>
