@@ -1,0 +1,46 @@
+.slider-input-class{
+    background: rgb(15, 15, 15);
+    border: solid rgb(78, 78, 78) 1px;
+    border-radius:3px;
+    color: white;
+    font-size: 15px;
+    margin:2px;
+}
+
+input:focus {
+    outline-width: 0;
+}
+
+.slider-input-class::-webkit-outer-spin-button,
+.slider-input-class::-webkit-inner-spin-button{
+    appearance: none;
+}
+
+button{
+    color: white;
+    background: transparent;
+    border: solid white 1px;
+    width: 150px;
+    height:30px;
+    padding: 5px;
+    margin: 5px;
+    transition: background .1s linear;
+}
+
+button:hover{
+    background: rgba(255,255,255, 0.15);
+}
+
+.slider-class{
+    margin-top: 10px;
+}
+
+.change-data-inner-td{
+    text-align: right;
+    width:70px;
+}
+
+#slider-system-name{
+    text-align: center !important;
+    float:none !important;
+}

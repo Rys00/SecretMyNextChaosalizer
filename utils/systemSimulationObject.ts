@@ -130,7 +130,7 @@ export class SystemSimulationObject {
 export function getDefaultLorenzSystem() {
   const lorenzSystem = new SystemSimulationObject(
     {
-      [SystemType.Lorenz]: [new Vector3(0, 1, 1.05)],
+      [SystemType.Lorenz]: [new Vector3(0, 1, 1.05), 0.01, 10, 28, 2.667],
     },
     20,
     0.01,
@@ -152,7 +152,7 @@ export function getDefaultLorenzSystem() {
 export function getDefaultRosslerSystem() {
   const rosslerSystem = new SystemSimulationObject(
     {
-      [SystemType.Rossler]: [new Vector3(0, 1, 1.05)],
+      [SystemType.Rossler]: [new Vector3(0, 1, 1.05), 0.05, 0.2, 0.2, 5.7],
     },
     3,
     0.01,
@@ -200,14 +200,15 @@ export function getLorenzSystem(values: Array<number> = []){
 }
 
 export function getRosslerSystem(values: Array<number> = []){
-  if(values.length < 2) return getDefaultRosslerSystem();
+  if(values.length < 3) return getDefaultRosslerSystem();
 
   if(typeof values[0] !== 'number') values[0] = 1;
   if(typeof values[1] !== 'number') values[1] = 1;
+  if(typeof values[1] !== 'number') values[2] = 1;
 
   const rosslerSystem = new SystemSimulationObject(
     {
-      [SystemType.Rossler]: [new Vector3(0, 1, 1.05), 0.05, values[0], values[1], 5.56],
+      [SystemType.Rossler]: [new Vector3(0, 1, 1.05), 0.05, values[0], values[1], values[2]],
     },
     3,
     0.01,

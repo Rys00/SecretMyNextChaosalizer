@@ -1,6 +1,5 @@
 import dynamic from "next/dynamic";
 import styles from "./page.module.scss";
-import Slider from "@/components/slider";
 
 const ThreeScene = dynamic(() => import("@/components/three_scene"), {
   ssr: false,

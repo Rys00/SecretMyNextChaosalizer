@@ -1,28 +1,32 @@
 "use client";
 
-import { getDefaultLorenzSystem, getDefaultRosslerSystem, getLorenzSystem, getRosslerSystem } from "@/utils/systemSimulationObject";
+import { getDefaultLorenzSystem, getDefaultRosslerSystem, getLorenzSystem, getRosslerSystem, SystemSimulationObject, SystemType } from "@/utils/systemSimulationObject";
 import CanvasRoot from "@/utils/three/canvas_root";
 import { LegacyRef, MutableRefObject, useEffect, useRef } from "react";
 import Slider from "./slider";
-import { LORENZ_LABELS, ROSSLER_LABELS } from "./constants";
-
-enum SystemType{
-  LORENZ,
-  ROSSLER
-};
+import { LORENZ_LABELS, ROSSLER_LABELS, SYSTEMS } from "./constants";
+import "./three_scene.css"
 
 const ThreeScene = () => {
   const ref = useRef<HTMLDivElement>();
   let renderer: HTMLCanvasElement | undefined;
-  let currentSystem: SystemType =  SystemType.LORENZ;
+  let currentSystem: SystemType =  SystemType.Lorenz;
   let root : CanvasRoot;
+  let animatingSystem: SystemSimulationObject;
+
+  const getSystemVariables = () =>{
+    let variables = [...animatingSystem.systemArgs];
+    variables.shift();
+    variables.shift();
+    return [SYSTEMS[currentSystem], variables, getCorrectLabels(currentSystem)];
+  };
 
   const generateCorrectSystem = (type: SystemType, values: Array<number> = []) => {
     switch(type){
-      case SystemType.LORENZ:
-        return getLorenzSystem(values);;
+      case SystemType.Lorenz:
+        return getLorenzSystem(values);
         break;
-      case SystemType.ROSSLER:
+      case SystemType.Rossler:
         return getRosslerSystem(values);
         break;
     }
@@ -31,9 +35,9 @@ const ThreeScene = () => {
 
   const getCorrectLabels = (type: SystemType) =>{
     switch(type){
-      case SystemType.LORENZ:
+      case SystemType.Lorenz:
         return LORENZ_LABELS;
-      case SystemType.ROSSLER:
+      case SystemType.Rossler:
         return ROSSLER_LABELS;;
     }
     return LORENZ_LABELS;
@@ -50,22 +54,32 @@ const ThreeScene = () => {
 
     root.addToScene(newSystem.root);
     root.addAnimation(newSystem.getSystemAnimation());
+
+    animatingSystem = newSystem;
   };
 
   const changeSystem = () => {
-    if(currentSystem == SystemType.LORENZ) currentSystem = SystemType.ROSSLER;
-    else currentSystem = SystemType.LORENZ;
+    if(currentSystem == SystemType.Lorenz) currentSystem = SystemType.Rossler;
+    else currentSystem = SystemType.Lorenz;
 
     valueChange();
 
     return getCorrectLabels(currentSystem);
   };
 
+  function createSystem(){
+    const system = generateCorrectSystem(currentSystem);
+    animatingSystem = system;
+  }
+
+  createSystem();
+
   useEffect(() => {
     root = new CanvasRoot();
     renderer = root.initSceneOn(ref as MutableRefObject<HTMLDivElement>);
 
     const system = generateCorrectSystem(currentSystem);
+    animatingSystem = system;
 
     root.addToScene(system.root);
     root.addAnimation(system.getSystemAnimation());
@@ -76,10 +90,14 @@ const ThreeScene = () => {
     };
   }, []);
 
-  return (<div ref={ref as LegacyRef<HTMLDivElement>} >
+  return (<div className="three-scene-outer-div-class">
     <Slider props = {{changeFunction: valueChange, 
-                  labels: getCorrectLabels(currentSystem),
-                  changeSystemFunction: changeSystem}} /> 
+              labels: getCorrectLabels(currentSystem),
+              changeSystemFunction: changeSystem,
+              systemVariablesFunction: getSystemVariables}} /> 
+    <div className="simulation-class">
+      <div ref={ref as LegacyRef<HTMLDivElement>}></div>
+    </div>
   </div>);
 };
 
