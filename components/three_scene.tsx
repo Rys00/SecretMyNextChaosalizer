@@ -32,6 +32,12 @@ const ThreeScene = () => {
     return [SYSTEMS[currentSystem], ...variables2];
   };
 
+  const getNAndEpsilon = () =>{
+    const variables = [animatingSystem.amount, animatingSystem.epsilon];
+
+    return [variables[0], variables[1]];
+  };
+
   const generateCorrectSystem = (type: SystemType, values: Array<number> = []) => {
     switch(type){
       case SystemType.Lorenz:
@@ -61,7 +67,7 @@ const ThreeScene = () => {
     root.animations.pop();
     renderer = root.initSceneOn(ref as MutableRefObject<HTMLDivElement>);
 
-    const newSystem = generateCorrectSystem(currentSystem, values);
+    const newSystem = generateCorrectSystem(currentSystem, values, );
 
     root.addToScene(newSystem.root);
     root.addAnimation(newSystem.getSystemAnimation());
@@ -105,7 +111,8 @@ const ThreeScene = () => {
     <Slider changeFunction={valueChange} 
               labels={getCorrectLabels(currentSystem)}
               changeSystemFunction={changeSystem}
-              systemVariablesFunction={getSystemVariables} /> 
+              systemVariablesFunction={getSystemVariables}
+              systemNAndVariables={getNAndEpsilon} /> 
     <div className="simulation-class">
       <div ref={ref as LegacyRef<HTMLDivElement>}></div>
     </div>

@@ -3,12 +3,14 @@ import "./slider.css"
 
 type changeFunctionType = (variables:Array<number>) => void;
 type functionNoArrayString = () => Array<string | undefined>
+type functionNoArrayNumber= () => Array<number | undefined>
 
 interface Props{
     changeFunction: changeFunctionType
     labels: Array<string>
     changeSystemFunction: functionNoArrayString
     systemVariablesFunction: functionNoArrayString
+    systemNAndVariables: functionNoArrayNumber
 }
 
 const Slider = ( props: Props ) =>{
@@ -16,6 +18,7 @@ const Slider = ( props: Props ) =>{
     const changeFunction = props.changeFunction;
     const changeSystemFunction = props.changeSystemFunction;
     const systemVariablesFunction = props.systemVariablesFunction;
+    const systemNAndVariables = props.systemNAndVariables;
 
     let inputs: Array<HTMLInputElement> = [];
     let noSliders: number = labels.length;
@@ -31,7 +34,7 @@ const Slider = ( props: Props ) =>{
         let trow = document.createElement("tr");
         trow.id = "slider-system-name";
         element.appendChild(trow);
-        trow.innerHTML = `<td colspan="2">${data[0]} system</td>`;
+        trow.innerHTML = `<td colspan="2"><h2>&nbsp;&nbsp;&nbsp;&nbsp;${data[0]} system</h2></td>`;
 
         for(let i = 0; i<noSliders; i++){
             trow = document.createElement("tr");
@@ -54,15 +57,42 @@ const Slider = ( props: Props ) =>{
             inputs.push(newChild);
             tdat.appendChild(newChild);
         }
+
+        const secVariables = systemNAndVariables();
+        trow = document.createElement("tr");
+        trow.innerHTML = `<td class="change-data-inner-td">
+                                    <label>n: </label>
+                                </td>
+                                <td class="change-data-inner-td">
+                                    <input type="number" class="slider-input-class" id="slider-change-data-input-n" placeholder="${secVariables[0]}"/>
+                                </td>`;
+        element.appendChild(trow);
+        trow = document.createElement("tr");
+        trow.innerHTML = `<td class="change-data-inner-td">
+                                    <label>epsilon: </label>
+                                </td>
+                                <td class="change-data-inner-td">
+                                    <input type="number" class="slider-input-class" id="slider-change-data-input-epsilon" placeholder="${secVariables[1]}"/>
+                                </td>`;
+        element.appendChild(trow);
     }
 
     function runChangeFunction(){
+        const variables = systemVariablesFunction();
         const values = [];
+
+        const nElement = document.getElementById("slider-change-data-input-n") as HTMLInputElement;
+        const epsilonElement = document.getElementById("slider-change-data-input-epsilon") as HTMLInputElement;
 
         let child: HTMLInputElement;
         for(child of inputs){
             values.push(Number(child.value));
+            if(values[values.length-1] == 0) values[values.length-1] = Number(variables[values.length]);
         }
+
+        const nAndEpsilon = systemNAndVariables();
+        values.push(Number((nElement?.value || nAndEpsilon[0])));
+        values.push(Number((epsilonElement?.value || nAndEpsilon[1])));
 
         changeFunction(values);
     }
@@ -79,10 +109,22 @@ const Slider = ( props: Props ) =>{
         addSliders(element);
     }
 
+    function loadNAndEpsilon(){
+        const nElement = document.getElementById("slider-change-data-input-n") as HTMLInputElement;
+        const epsilonElement = document.getElementById("slider-change-data-input-epsilon") as HTMLInputElement;
+
+        const variables = systemNAndVariables();
+
+        console.log(variables)
+        if(nElement != null) nElement.placeholder = (variables[0] || "error").toString();
+        if(epsilonElement != null) epsilonElement.placeholder = (variables[1] || "error").toString();
+    }
+
     useEffect(() =>{
         const element = document.getElementById("slider-input-places-12334");
         if(element == null) throw("big big error");
         addSliders(element);
+        loadNAndEpsilon();
     });
 
     return(<div className="slider-class">
