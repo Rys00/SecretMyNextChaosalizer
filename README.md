@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Układ chaotyczne
 
-## Getting Started
+#### Przygotowali:
 
-First, run the development server:
+Mateusz Ogniewski 331413
+Mateusz Wawrzyniak 331450
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Jak uruchomić?
+
+Na początku zaznaczę, że własne uruchamianie jest opcjonalne, gdyż nasz projekt jest publicznie dostępny pod adresem [http://31.178.119.223:8080](http://31.178.119.223:8080) i można go tam zobaczyć (gdyby serwer nie działał prosilibyśmy o kontakt).
+Gdyby jednak była potrzeba własnego hostowania to kroki są następujące:
+
+- Najpierw jeżeli nie posiadamy środowiska **NodeJS** wraz z menadżerem pakietów **npm** instalujemy go zgodnie z [link](https://nodejs.org/en/download) (dla linuxa tak jak poniżej):
+
+```sh
+curl -o- https://fnm.vercel.app/install | bash
+fnm install 22
+# weryfikujemy pakiety
+node -v
+npm -v
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Następnie wchodzimy do folderu naszego projektu i wywołujemy:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```sh
+npm install # instalujemy wszystkie dependency
+npm run dev # startujemy lokalny serwer
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Jeżeli wszystko przebiegło pomyślnie nasza aplikacja powinna być dostępna pod adresem [localhost:3000](http://localhost:3000)
 
-## Learn More
+## Gdzie się znajduje sedno projektu
 
-To learn more about Next.js, take a look at the following resources:
+Sedno projektu (kod odpowiedzialny za wyliczanie krzywych do wizualizacji układów Lorenza i Rosslera) znajduje się w pliku [utils/rk4.ts](utils/rk4.ts). Wyliczanie kolejnych punktów odbywa się przy pomocy metody Runge–Kutta (4 rzędu) w funkcji genNextPoint(). Klasa RK4Curve jest generyczna i sama nie reprezentuje żadnego systemu, poszczególnie implementacje układów Lorenza i Rosslera dziedziczą po tej klasie i znajdują się odpowiednio w plikach [utils/lorenz.ts](utils/lorenz.ts) oraz [utils/rossler.ts](utils/rossler.ts).
+Kod odpowiedzialny za renderowanie systemów znajduje się w pliku [utils/systemSimulationObject.ts](utils/systemSimulationObject.ts)
+Pozostałe pliki służą jedynie do przedstawienia wyników działania algorytmu.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Dokumentacja działania układów chaotycznych
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+W projekcie jest dostępna dokumentacja opisująca działanie układów chaotycznych a w szczególności układów Lorenza i Rosslera. Znajduje się w pliku [docs.pdf](docs.pdf)
